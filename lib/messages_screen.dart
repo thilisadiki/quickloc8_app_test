@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class MessagesScreen extends StatefulWidget {
+  const MessagesScreen({super.key});
+
   @override
-  _MessagesScreenState createState() => _MessagesScreenState();
+  MessagesScreenState createState() => MessagesScreenState();
 }
 
-class _MessagesScreenState extends State<MessagesScreen> {
-  List<Map<String, String>> _messages = [];
+class MessagesScreenState extends State<MessagesScreen> {
+  final List<Map<String, String>> _messages = [];
 
   @override
   void initState() {
@@ -35,7 +37,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Messages'),
+        title: const Text('Messages'),
       ),
       body: _buildMessagesList(),
     );

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'messages_screen.dart'; // Import the MessagesScreen
@@ -33,8 +32,7 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(
-      const Duration(microseconds: 3500),
+    Timer(const Duration(microseconds: 3500),
       () => Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MapScreen()),
@@ -46,7 +44,7 @@ class SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Image.asset('assets/Quicloc8-logo.png'),
+        child: Image.asset('assets/Quicloc8_logo.png'),
       ),
     );
   }
@@ -70,17 +68,20 @@ class MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _loadMarkers() async {
-    final String jsonString = await DefaultAssetBundle.of(context).loadString('assets/vehicleCoordinates.json');
+    final String jsonString = await DefaultAssetBundle.of(context)
+        .loadString('assets/vehicleCoordinates.json');
     final List<dynamic> data = json.decode(jsonString);
 
     for (var vehicle in data) {
       _markers.add(
         Marker(
           markerId: MarkerId(vehicle['heading']),
-          position: LatLng(double.parse(vehicle['latitude']), double.parse(vehicle['longitude'])),
+          position: LatLng(double.parse(vehicle['latitude']),
+              double.parse(vehicle['longitude'])),
           rotation: double.parse(vehicle['heading']),
           icon: await BitmapDescriptor.fromAssetImage(
-            const ImageConfiguration(size: Size(48, 48)), // Adjust the size as needed
+            const ImageConfiguration(
+                size: Size(10, 10)), // Adjust the size as needed
             'assets/ic_new_white_taxi.png',
           ),
         ),
@@ -101,7 +102,7 @@ class MapScreenState extends State<MapScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => MessagesScreen()),
+                MaterialPageRoute(builder: (context) => const MessagesScreen()),
               );
             },
           ),
@@ -113,7 +114,7 @@ class MapScreenState extends State<MapScreen> {
           _controller.complete(controller);
         },
         initialCameraPosition: const CameraPosition(
-          target: LatLng(-33.876115, 18.5008116),
+          target: LatLng(-32.30956479955547, 23.89339183860338),
           zoom: 5.0,
         ),
       ),
