@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
+import 'messages_screen.dart'; // Import the MessagesScreen
 
 void main() => runApp(const MyApp());
 
@@ -46,7 +46,7 @@ class SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Image.asset('assets/Quicloc8_logo.png'),
+        child: Image.asset('assets/Quicloc8-logo.png'),
       ),
     );
   }
@@ -69,32 +69,43 @@ class MapScreenState extends State<MapScreen> {
     _loadMarkers();
   }
 
-Future<void> _loadMarkers() async {
-  final String jsonString = await DefaultAssetBundle.of(context).loadString('assets/vehicleCoordinates.json');
-  final List<dynamic> data = json.decode(jsonString);
+  Future<void> _loadMarkers() async {
+    final String jsonString = await DefaultAssetBundle.of(context).loadString('assets/vehicleCoordinates.json');
+    final List<dynamic> data = json.decode(jsonString);
 
-  for (var vehicle in data) {
-    _markers.add(
-      Marker(
-        markerId: MarkerId(vehicle['heading']),
-        position: LatLng(double.parse(vehicle['latitude']), double.parse(vehicle['longitude'])),
-        rotation: double.parse(vehicle['heading']),
-        icon: await BitmapDescriptor.fromAssetImage(
-          const ImageConfiguration(size: Size(48, 48)), // Adjust the size as needed
-          'assets/ic_new_white_taxi.png',
+    for (var vehicle in data) {
+      _markers.add(
+        Marker(
+          markerId: MarkerId(vehicle['heading']),
+          position: LatLng(double.parse(vehicle['latitude']), double.parse(vehicle['longitude'])),
+          rotation: double.parse(vehicle['heading']),
+          icon: await BitmapDescriptor.fromAssetImage(
+            const ImageConfiguration(size: Size(48, 48)), // Adjust the size as needed
+            'assets/ic_new_white_taxi.png',
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  setState(() {});
-}
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quicklc8 Map'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.message),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MessagesScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: GoogleMap(
         markers: Set.from(_markers),
@@ -103,7 +114,7 @@ Future<void> _loadMarkers() async {
         },
         initialCameraPosition: const CameraPosition(
           target: LatLng(-33.876115, 18.5008116),
-          zoom: 12.0,
+          zoom: 5.0,
         ),
       ),
     );
