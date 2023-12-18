@@ -1,0 +1,6 @@
+light: {
+  primary: '#FF5722',
+  secondary: '#FFCCBC',
+  accent: '#2e302f',
+  error: '#fe2a39'
+}
