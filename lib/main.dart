@@ -1,11 +1,11 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -13,12 +13,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Quickloc8',
+      title: 'Quicklc8 App',
       theme: ThemeData(
-        primaryColor: const Color(0xFFFF5722),
-        colorScheme: ThemeData().colorScheme.copyWith(
-              secondary: const Color(0xFF2e302f),
-            ),
+        primarySwatch: Colors.blue,
       ),
       home: const SplashScreen(),
     );
@@ -36,17 +33,19 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const MapScreen()));
-    });
+    Timer(
+      const Duration(microseconds: 3500),
+      () => Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MapScreen()),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Center(
+    return Scaffold(
+      body: Center(
         child: Image.asset('assets/Quicloc8_logo.png'),
       ),
     );
@@ -61,114 +60,51 @@ class MapScreen extends StatefulWidget {
 }
 
 class MapScreenState extends State<MapScreen> {
-  List<Marker> allMarkers = [];
+  final Completer<GoogleMapController> _controller = Completer();
+  final List<Marker> _markers = [];
 
   @override
   void initState() {
     super.initState();
-    loadVehicleCoordinates().then((vehicles) {
-      for (var vehicle in vehicles) {
-        BitmapDescriptor.fromAssetImage(
-          const ImageConfiguration(devicePixelRatio: 2.0),
+    _loadMarkers();
+  }
+
+Future<void> _loadMarkers() async {
+  final String jsonString = await DefaultAssetBundle.of(context).loadString('assets/vehicleCoordinates.json');
+  final List<dynamic> data = json.decode(jsonString);
+
+  for (var vehicle in data) {
+    _markers.add(
+      Marker(
+        markerId: MarkerId(vehicle['heading']),
+        position: LatLng(double.parse(vehicle['latitude']), double.parse(vehicle['longitude'])),
+        rotation: double.parse(vehicle['heading']),
+        icon: await BitmapDescriptor.fromAssetImage(
+          const ImageConfiguration(size: Size(48, 48)), // Adjust the size as needed
           'assets/ic_new_white_taxi.png',
-        ).then((icon) {
-          setState(() {
-            allMarkers.add(
-              Marker(
-                markerId: MarkerId(vehicle['id']),
-                position: LatLng(vehicle['lat'], vehicle['lng']),
-                icon: icon,
-                rotation: vehicle['direction'],
-              ),
-            );
-          });
-        });
-      }
-    });
-  }
-
-  Future<List> loadVehicleCoordinates() async {
-    String jsonString =
-        await newMethod().loadString('assets/vehicleCoordinates.json');
-    List vehicleCoordinates = json.decode(jsonString);
-    return vehicleCoordinates.map((vehicle) {
-      return {
-        'id': vehicle['id'],
-        'lat': vehicle['latitude'],
-        'lng': vehicle['longitude'],
-        'direction': vehicle['heading'],
-      };
-    }).toList();
-  }
-
-  AssetBundle newMethod() => rootBundle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Map'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.message),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const MessageScreen()));
-            },
-          ),
-        ],
-      ),
-      body: GoogleMap(
-        initialCameraPosition: const CameraPosition(
-          target: LatLng(-25.757999, 28.201021),
-          zoom: 14.0,
         ),
-        markers: Set.from(allMarkers),
       ),
     );
   }
+
+  setState(() {});
 }
-
-class MessageScreen extends StatefulWidget {
-  const MessageScreen({super.key});
-
-  @override
-  MessageScreenState createState() => MessageScreenState();
-}
-
-class MessageScreenState extends State<MessageScreen> {
-  List messages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    loadMessages().then((msgs) {
-      setState(() {
-        messages = msgs;
-      });
-    });
-  }
-
-  Future<List> loadMessages() async {
-    String jsonString = await rootBundle.loadString('assets/messages.json');
-    return json.decode(jsonString);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Messages'),
+        title: const Text('Quicklc8 Map'),
       ),
-      body: ListView.builder(
-        itemCount: messages.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(messages[index]['subject']),
-            subtitle: Text(messages[index]['message']),
-            trailing: Text(messages[index]['display']),
-          );
+      body: GoogleMap(
+        markers: Set.from(_markers),
+        onMapCreated: (GoogleMapController controller) {
+          _controller.complete(controller);
         },
+        initialCameraPosition: const CameraPosition(
+          target: LatLng(-33.876115, 18.5008116),
+          zoom: 12.0,
+        ),
       ),
     );
   }
